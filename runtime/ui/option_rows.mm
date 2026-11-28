@@ -19,6 +19,7 @@
 #include "ui_theme.h"
 
 static float g_scale = 1;
+static bool g_inline_rows;
 static float U(float v) { return v * g_scale * 2; }  // (design units: the callers' scale is 1 at 1080 p, u is 2 there)
 static std::string g_desc_hover, g_desc_focus, g_desc_shown;  // this frame's hovered / selected row, and the last shown
 static std::string g_desc_first;  // the page's first row (shown until a row is selected or hovered)
@@ -79,6 +80,17 @@ void opt_begin(const char *id, float scale) {
     g_desc_first.clear();
 }
 
+void opt_begin_inline(const char *id, float scale) {
+    g_scale = scale;
+    g_inline_rows = true;
+    ImGui::PushID(id);
+}
+
+void opt_end_inline(void) {
+    ImGui::PopID();
+    g_inline_rows = false;
+}
+
 // (labels, values, descriptions and titles are English: shown in the menu language, tr(); IDs stay English)
 // A section: its name small, in capitals and muted, as the sidebar's groups
 void opt_section(const char *title) {
@@ -134,7 +146,7 @@ static int row(const char *label, const std::string &value, bool changed, const 
     bool dim = off || g_value_dim;
     g_value_dim = false;
     bool hov = ImGui::IsItemHovered(), foc = ImGui::IsItemFocused() && ImGui::GetCurrentContext()->NavCursorVisible;
-    if (foc && !g_cur_page.empty()) g_saved_focus[g_cur_page] = item_id;
+    if (foc && !g_inline_rows && !g_cur_page.empty()) g_saved_focus[g_cur_page] = item_id;
     int step = clicked && !off ? 2 : 0;
     g_held = false;
     if (foc && !off) {
@@ -152,9 +164,18 @@ static int row(const char *label, const std::string &value, bool changed, const 
             ImGui::SetKeyOwner(k, ImGui::GetItemID());
     }
     if (desc) desc = tr(desc);
-    if (foc) g_desc_focus = desc ? desc : "";
-    if (hov) g_desc_hover = desc ? desc : "";
-    if (g_desc_first.empty() && desc) g_desc_first = desc;
+    if (g_inline_rows) {
+        if (desc && *desc && ImGui::BeginItemTooltip()) {
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 28);
+            ImGui::TextUnformatted(desc);
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
+    } else {
+        if (foc) g_desc_focus = desc ? desc : "";
+        if (hov) g_desc_hover = desc ? desc : "";
+        if (g_desc_first.empty() && desc) g_desc_first = desc;
+    }
 
     ImDrawList *dl = ImGui::GetWindowDrawList();
     float r = U(5), pad = U(12), fs = ImGui::GetFontSize();

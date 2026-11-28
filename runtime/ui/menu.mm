@@ -2182,6 +2182,8 @@ static void tab_teleport(void) {
 }
 
 static void tab_about(void) {
+    float scale = ImGui::GetFontSize() / 34;
+    opt_begin_inline("##controls", scale);
     header("Movement");
     toggle("D-pad as left stick", &g_settings.dpad_move);
     hint("The d-pad (and the arrow keys) also move like the left stick while the stick is at rest.");
@@ -2234,14 +2236,13 @@ static void tab_about(void) {
     opt_toggle("Toggle sprint", &g_settings.toggle_sprint, false,
                "Press the sprint button once while moving and Link keeps sprinting until he stops or you press it "
                "again. Not on horseback.");
-    {   // (the rest of the game's Options screen's Controls page: runtime/ui/game_options.mm)
-        void game_items_f1_rows(int which);
-        opt_begin("##controls_more", ImGui::GetFontSize() / 34);
-        opt_section("Prompts and motion");
-        game_items_f1_rows(1);
-        opt_end();
-    }
-    controls_bindings_draw(ImGui::GetFontSize() / 34);
+    ImGui::Spacing();
+    header("Prompts and motion");
+    void game_items_f1_rows(int which);
+    game_items_f1_rows(1);
+    opt_end_inline();
+    ImGui::Spacing();
+    controls_bindings_draw(scale);
     ImGui::Spacing();
     header("Menu");
     ImGui::TextUnformatted(tr("Open / close this menu:  F1, Esc, the controller's Home / Xbox / PlayStation button, or Back + Start"));

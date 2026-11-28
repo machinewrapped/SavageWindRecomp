@@ -9,6 +9,9 @@
 #pragma once
 
 void opt_begin(const char *id, float scale);
+// Use the containing page's scroll area and show row descriptions in tooltips.
+void opt_begin_inline(const char *id, float scale);
+void opt_end_inline(void);
 void opt_section(const char *title);
 bool opt_toggle(const char *label, bool *v, bool def, const char *desc);
 // item toggle: label as written (upper = false), optional value_override (else On/Off), highlighted while *v is true
